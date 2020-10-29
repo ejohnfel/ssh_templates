@@ -1,0 +1,11 @@
+# Example SSH Client Config File; Placed in ~/.ssh/config
+host host-nickname
+	# Takes most ssh_config options, see man ssh_config for details
+	HostName ip_or_dns_name.of.host
+	User username
+	# Specify key to use, if using keys
+	IdentityFile ~/.ssh/id_rsa
+	ForwardAgent yes
+	AddKeysToAgent yes
+	# Port to use, ex. if not using the default tcp/22
+	# Port 8023

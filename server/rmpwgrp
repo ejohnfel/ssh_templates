@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# This script should be run periodically to remove users in the pwusers
+# group, IF, an authorized_keys file is detected in their home folder.
+# This helps automate removing pw auth from a user once a key is installed
+
+declare -a homes
+
+group = pwusers
+
+homes = ( /home )
+
+#
+# Functions
+#
+
+# Check for user membership in ${group}, remove if in it
+function RemoveUser()
+{
+	if groups "${1}" | grep -q -E "\s+${group}(\s+|$)"; then
+		gpasswd -d "${1}" "${group}"
+	fi
+}
+
+#
+# Main Loop
+#
+
+[ ! "${LOGNAME}" = "root" ] && printf "Must be root to run...\n" && exit 0
+
+for home in ${homes[@]}; do
+	if [ -d "${home}" ]; then
+		# If home folder exists, push into it
+		pushd "${home}" > /dev/null
+
+		# Get entities in folder
+		for user in *; do
+			if [ -d "${user}" ]; then
+				# If entity is a directory... check for pub keys
+				if [ -d "${user}/.ssh" -a -f "${user}/.ssh/authorized_keys" ]; then
+					# Ok, pub keys exists, check groups
+					RemoveUser "${user}"
+				fi
+			fi
+		done
+
+		popd > /dev/null
+	fi
+done
