@@ -6,9 +6,9 @@
 
 declare -a homes
 
-group = pwusers
+group="pwusers"
 
-homes = ( /home )
+homes=( /home )
 
 #
 # Functions
@@ -18,7 +18,7 @@ homes = ( /home )
 function RemoveUser()
 {
 	if groups "${1}" | grep -q -E "\s+${group}(\s+|$)"; then
-		gpasswd -d "${1}" "${group}"
+		gpasswd -d "${1}" "${group}" > /dev/null
 	fi
 }
 
