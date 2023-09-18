@@ -1,0 +1,180 @@
+# Package generated configuration file
+# See the sshd_config(5) manpage for details
+
+#
+# Example SSHD_CONFIG
+#
+# The key four pieces of this config...
+# 1. Turn off PasswordAuthentication
+# 2. Increase MaxRetries
+# 3. Prevent Root Login
+# 4. Use Match statements to make exceptions or change other settings
+#
+# Look for comments beginning with '***' for explanations
+#
+# Lastly, if staying on port 22, also install Fail2Ban, as this will reduce
+# the amount of noise in for authentication/syslogs
+#
+
+# What ports, IPs and protocols we listen for
+# *** Use any port you like, but when configured properly and regularly
+# *** Patched, do not worry about remaining on port 22
+Port 22
+# Use these options to restrict which interfaces/protocols sshd will bind to
+#ListenAddress ::
+#ListenAddress 0.0.0.0
+Protocol 2
+# HostKeys for protocol version 2
+HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_dsa_key
+HostKey /etc/ssh/ssh_host_ecdsa_key
+HostKey /etc/ssh/ssh_host_ed25519_key
+#Privilege Separation is turned on for security
+UsePrivilegeSeparation yes
+
+# Lifetime and size of ephemeral version 1 server key
+KeyRegenerationInterval 3600
+# *** 2048 is better then 1024, however, some older clients MAY have issues with
+# *** this, so be aware. If you server was not using 2048 when installed, you
+# *** may have to regenerate the hosts keys.
+ServerKeyBits 2048
+
+# Logging
+SyslogFacility AUTH
+LogLevel INFO
+
+# Authentication:
+LoginGraceTime 30s
+# *** Do not allow root login, if you must, make it keys only OR deny
+# *** root except from certain Hosts/IPs
+PermitRootLogin no
+StrictModes yes
+# *** When users have multiple keys, a short number of retries will prevent
+# *** them from logging in. When a user can't log in, always check the auth
+# *** logs and in some cases, run a test ssh daemon, see sshd_config.test
+# *** for details
+MaxAuthTries 10
+#MaxSessions 10
+
+RSAAuthentication yes
+PubkeyAuthentication yes
+#AuthorizedKeysFile	%h/.ssh/authorized_keys
+
+# Don't read the user's ~/.rhosts and ~/.shosts files
+IgnoreRhosts yes
+# For this to work you will also need host keys in /etc/ssh_known_hosts
+#RhostsRSAAuthentication no
+# similar for protocol version 2
+# *** While setting up Hostbased authentication is a little complex, it is a viable
+# *** option when you need to automate some tasks, instead of using user based keys
+HostbasedAuthentication no
+# Uncomment if you don't trust ~/.ssh/known_hosts for RhostsRSAAuthentication
+#IgnoreUserKnownHosts yes
+
+# To enable empty passwords, change to yes (NOT RECOMMENDED)
+PermitEmptyPasswords no
+
+# Change to yes to enable challenge-response passwords (beware issues with
+# some PAM modules and threads)
+ChallengeResponseAuthentication no
+
+# Change to no to disable tunnelled clear text passwords
+# *** This is the critical item, in this global section, turn off password authentication
+PasswordAuthentication no
+
+# Kerberos options
+#KerberosAuthentication no
+#KerberosGetAFSToken no
+#KerberosOrLocalPasswd yes
+#KerberosTicketCleanup yes
+
+# GSSAPI options
+#GSSAPIAuthentication no
+#GSSAPICleanupCredentials yes
+
+# *** Sane defaults
+X11Forwarding no
+X11DisplayOffset 10
+PermitTunnel no
+PrintMotd yes
+PrintLastLog yes
+TCPKeepAlive yes
+#UseDNS yes
+#UseLogin no
+
+#MaxStartups 10:30:60
+Banner /etc/issue.net
+
+# Allow client to pass locale environment variables
+AcceptEnv LANG LC_*
+
+# *** If sftp fails here, it's because your distro puts the sftp binary in a different location
+# *** YOu will need to find it and change this line
+Subsystem sftp /usr/lib/openssh/sftp-server
+
+# Set this to 'yes' to enable PAM authentication, account processing,
+# and session processing. If this is enabled, PAM authentication will
+# be allowed through the ChallengeResponseAuthentication and
+# PasswordAuthentication.  Depending on your PAM configuration,
+# PAM authentication via ChallengeResponseAuthentication may bypass
+# the setting of "PermitRootLogin without-password".
+# If you just want the PAM account and session checks to run without
+# PAM authentication, then enable this but set PasswordAuthentication
+# and ChallengeResponseAuthentication to 'no'.
+UsePAM yes
+
+# Check DNS forward and reverse are in agreement
+UseDNS yes
+
+# *** You can use a combination of AllowUsers, AllowGroups and DenyUsers or groups to
+# *** Set specific permissions up. For example, if we allow root login, you can
+# *** set the condictions for that login here. Here, we allow anyone in the 'users'
+# *** group in and deny all others. AllowUsers follows, with a rule specifically for root 
+
+AllowGroups users
+AllowUsers root@ahost.com
+
+# *** Denying some default accounts is advisable, here are some examples
+DenyUsers root pi debian ubuntu ubuntuuser
+
+# Examples of Match Statements
+
+# *** Example of allowing password authentication from a given subnet, despite being disabled
+# *** in the global section
+Match Address 192.168.0.0/16
+	X11Forwarding yes
+	PasswordAuthentication yes
+	AllowAgentForwarding yes
+	AllowTcpForwarding yes
+	PermitTunnel yes
+	GatewayPorts clientspecified
+
+# *** Example of making specific settings for a given user, you can also do this for groups
+Match User atestuser
+	X11Forwarding yes
+	AllowAgentForwarding yes
+	AllowTcpForwarding yes
+	PermitTunnel yes
+	GatewayPorts clientspecified
+
+#
+# Example SFTP Restricted Account
+#
+
+#
+# Change Root User Bob to his home folder, limit to sftp only and no tunnels
+#
+
+#Match User bob
+#	ChrootDirectory %h
+#	ForceCommand internal-sftp
+#	AllowTcpForwarding no
+
+#
+# Match group, Chroot to drop folder/<username> of user, limit sftp and tunnels
+#
+
+#Match Group AGroup
+#	ChrootDirectory /home/AGroup/Drop/%u
+#	ForceCommand internal-sftp
+#	AllowTcpForwarding no
